@@ -1,12 +1,22 @@
 const express = require('express');
 let bodyParser = require("body-parser");
-const { parse } = require('path');
 const app = express();
-
-
-app.use(bodyParser.urlencoded());
+const multer = require("multer")
+const storage = multer.diskStorage({
+    destination: function (req, file, cb){
+        cb(null, './public/uploads/productImages')
+    },
+    filename: function (req, file, cb){
+        cb(null, file.originalname)
+    }
+})
+const upload = multer({
+    storage: storage
+})
+var uuid = require('uuid');
 
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 
 app.listen(3000, function () {
@@ -41,9 +51,16 @@ app.get('/', (req, res) => {
     res.send(posts)
 })
 
-app.post('/add', (req, res) => {
-    const email = req.body;
-    posts.push(email);
-    console.log(email);
-    res.json(email);
+app.post('/', upload.single('image'), (req, res) => {
+    const fileName = req.file != null ? req.file.filename : null
+    const newProd = 
+    {
+        id: uuid.v1(),
+        name: req.body.name,
+        price: req.body.price,
+        quantity: req.body.quantity,
+        image: fileName
+    }
+    posts.push(newProd);
+    res.json(newProd);
 })
